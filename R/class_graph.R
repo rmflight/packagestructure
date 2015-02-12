@@ -1,17 +1,39 @@
 #' class object
 #' 
 #' @slot id an identifier for the object, character, normally name:type:parent:package
-#' @slot name the name of the class or slot
+#' @slot name the name of the class (also the class of it)
 #' @slot type is it a "slot" of another class or a "class" itself
 #' @slot parent what is the parent class
 #' @slot package what package does the object belong to
+#' @slot checked has it been checked whether it contains any slots
 #' @export
 setClass("class_object",
          slots = list(id = "character",
                       name = "character",
                       type = "character",
                       parent = "character",
-                      package = "character"))
+                      package = "character",
+                      checked = "logical"),
+         prototype = prototype(type = "class",
+                               checked = FALSE))
+
+#' slot object
+#' 
+#' @slot id identifier of the slot, normally name:type:parent:package
+#' @slot name the name of the slot
+#' @slot type slot
+#' @slot parent the parent class object
+#' @slot slot_class the class of the slot
+#' @slot package the package it belongs to
+#' @export
+setClass("slot_object",
+         slots = list(id = "character",
+                      name = "character",
+                      type = "character",
+                      parent = "character",
+                      slot_class = "character",
+                      package = "character"),
+         prototype = prototype(type = "slot"))
 
 #' class graph of package
 #' 
@@ -31,31 +53,42 @@ class_graph <- function(package = ".", depth = 0){
     package_name <- package_env$.packageName
   }
   
-  package_classes <- methods::getClasses(where = package_env)
+  package_objects <- methods::getClasses(where = package_env)
   
   if (length(package_classes) == 0){
     return("No classes in package!")
   }
   
-  checked_classes <- rep(FALSE, length(package_classes))
-  names(checked_classes) <- package_classes
+  package_objects <- lapply(methods::getClasses(where = package_env), function(x){
+    new("class_object",
+        id = paste(x, ":", "class", "::", x, ":", package_name, sep = ""),
+        name = x,
+        type = "class",
+        parent = "",
+        ob_class = x,
+        package = package_name)
+  })
   
-  class_graph <- graph::graphNEL(nodes = base_classes, edgemode = "directed")
-  nodeDataDefaults(class_graph, "type") <- "base_class"
-  edgeDataDefaults(class_graph, "type") <- "slot"
+  object_checked <- sapply(package_objects, function(x){x@checked})
   
-  nodeData(class_graph, base_classes, "type") <- "base_class"
+  curr_classes <- sapply(package_objects, function(x){x@ob_class})
   
-  class_graph <- addNode(package_classes, class_graph)
-  
-  while (sum(checked_classes) != length(checked_classes)){
-    to_check <- names(checked_classes)[!checked_classes]
-    for (i_class in to_check){
-      is_node <- i_class %in% nodes(class_graph)
-      if (!is_node){
-        class_data <- methods::getClass(i_class, where = package_env)
-        class_graph <- addNode(i_class)
+  while (sum(object_checked) != length(object_checked)){
+    to_check <- package_objects[!object_checked]
+    for (i_class in seq_along(to_check)){
+      tmp_obj <- to_check[[i_class]]
+      tmp_class <- methods::getClass(tmp_obj@name)
+      
+      tmp_slots <- tmp_class@slots
+      
+      if (length(tmp_slots) != 0){
+        new_classes <- character(0)
+        slot_objects <- lapply(tmp_slots, function(x){
+          new("class_object")
+        })
       }
+      
+      
       
     }
   }
