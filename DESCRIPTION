@@ -1,8 +1,10 @@
 Package: classgraphslots
 Title: determine the class dependency graph, including slots
-Version: 0.0.0
+Version: 0.0.1
+Date: 2015-02-12
 Authors@R: "Robert M Flight <rflight79@gmail.com> [aut, cre]"
-Description: Examines the classes of a package and slots of classes
-    to generate a dependency graph that includes the slots of S4 classes
+Description: Examines the classes of a package and slots of classes to
+        generate a dependency graph that includes the slots of S4
+        classes
 Depends: R (>= 3.0)
 VignetteBuilder: knitr
