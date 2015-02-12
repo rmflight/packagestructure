@@ -133,9 +133,52 @@ class_graph <- function(package = ".", depth = 0){
     curr_classes <- sapply(package_objects, function(x){x@name})
   }
   
-  out_graph <- create_class_graph(package_objects, slot_objects)
+  out_graph <- create_class_graph(package_objects, slot_objects, base_classes)
 }
 
+#' create a class graph
+#' 
+#' given the package objects / classes, and slot objects / classes, create a graph that represents
+#' their relationships
+#' 
+#' @param package_objects the package objects
+#' @param slot_objects the slot objects
+#' @param other_classes other, generally base classes
+#' 
+#' @return a graph
+#' @export
+create_class_graph <- function(package_objects, slot_objects, other_classes){
+  package_nodes <- sapply(package_objects, function(x){x@id})
+  slot_nodes <- sapply(slot_objects, function(x){x@id})
+  
+  other_nodes <- other_classes
+  
+  out_graph <- graphNEL(nodes = c(package_nodes, slot_nodes, other_nodes))
+  nodeDataDefaults(out_graph, "type") <- "none"
+  nodeDataDefaults(out_graph, "package") <- "none"
+  nodeDataDefaults(out_graph, "name") <- "none"
+  edgeDataDefaults(out_graph, "type") <- "none"
+  
+  nodeData(out_graph, package_nodes, "type") <- "class"
+  nodeData(out_graph, slot_nodes, "type") <- "slot"
+  nodeData(out_graph, other_nodes, "type") <- "base"
+  
+  for (i_slot in seq_along(slot_objects)){
+    tmp_slot <- slot_objects[[i_slot]]
+    n1 <- tmp_slot@id
+    n2 <- tmp_slot@parent
+    out_graph <- addEdge(n1, n2, out_graph, 2)
+    edgeData(out_graph, n1, n2, "type") <- "slot"
+    
+    n3 <- tmp_slot@slot_class
+    if (n3 %in% nodes(out_graph)){
+      out_graph <- addEdge(n1, n3, out_graph, 1)
+      edgeData(out_graph, n1, n3, "type") <- "class"
+    }
+    
+  }
+  out_graph
+}
 
 
 #' get package env
