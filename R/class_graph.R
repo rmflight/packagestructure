@@ -6,6 +6,7 @@
 #' @slot parent what is the parent class
 #' @slot package what package does the object belong to
 #' @slot checked has it been checked whether it contains any slots
+#' @slot level what level of package depth have we gone
 #' @export
 setClass("class_object",
          slots = list(id = "character",
@@ -13,7 +14,8 @@ setClass("class_object",
                       type = "character",
                       parent = "character",
                       package = "character",
-                      checked = "logical"),
+                      checked = "logical",
+                      level = "numeric"),
          prototype = prototype(type = "class",
                                checked = FALSE))
 
@@ -25,6 +27,7 @@ setClass("class_object",
 #' @slot parent the parent class object
 #' @slot slot_class the class of the slot
 #' @slot package the package it belongs to
+#' @slot level what level of package checking have we gone to
 #' @export
 setClass("slot_object",
          slots = list(id = "character",
@@ -44,7 +47,7 @@ setClass("slot_object",
 #' @export
 #' @return graph of classes
 class_graph <- function(package = ".", depth = 0){
-  base_classes <- c("list", "character", "numeric", "double", "integer", "ANY")
+  base_classes <- c("list", "character", "numeric", "double", "integer", "matrix", "data.frame", "ANY")
   package_env <- get_package_env(package)
   
   if (grepl("^package", package)){
@@ -63,35 +66,74 @@ class_graph <- function(package = ".", depth = 0){
     new("class_object",
         id = paste(x, ":", "class", "::", x, ":", package_name, sep = ""),
         name = x,
-        type = "class",
         parent = "",
-        ob_class = x,
-        package = package_name)
+        package = package_name,
+        level = 0)
   })
+  
+  slot_objects <- list()
   
   object_checked <- sapply(package_objects, function(x){x@checked})
   
-  curr_classes <- sapply(package_objects, function(x){x@ob_class})
+  curr_classes <- sapply(package_objects, function(x){x@name})
   
   while (sum(object_checked) != length(object_checked)){
-    to_check <- package_objects[!object_checked]
-    for (i_class in seq_along(to_check)){
-      tmp_obj <- to_check[[i_class]]
+    to_check <- which(!object_checked)
+    for (i_class in to_check){
+      print(i_class)
+      tmp_obj <- package_objects[[i_class]]
       tmp_class <- methods::getClass(tmp_obj@name)
       
       tmp_slots <- tmp_class@slots
       
       if (length(tmp_slots) != 0){
         new_classes <- character(0)
-        slot_objects <- lapply(tmp_slots, function(x){
-          new("class_object")
+        tmp_objects <- lapply(names(tmp_slots), function(x){
+          t_slot <- tmp_slots[[x]]
+          new("slot_object",
+              name = x,
+              parent = tmp_obj@id,
+              slot_class = t_slot,
+              package = tmp_obj@package)
         })
+        tmp_objects <- lapply(tmp_objects, function(x){
+          x@id <- paste(x@name, x@type, x@parent, x@package, sep = ":")
+          x
+        })
+        slot_objects <- c(slot_objects, tmp_objects)
+        
+        if (tmp_obj@level < (depth + 1)){
+          slot_classes <- sapply(tmp_objects, function(x){
+            x@slot_class
+          })
+          new_classes <- slot_classes[!(slot_classes %in% c(base_classes, curr_classes))]
+          
+          if (length(new_classes) != 0){
+            tmp_class_objects <- lapply(new_classes, function(x){
+              x_class <- methods::getClass(x)
+              new("class_object",
+                  id = paste(x_class@className, ":", "class", "::", x_class@package, sep = ""),
+                  name = x_class@className,
+                  parent = "",
+                  package = x_class@package,
+                  level = tmp_obj@level + 1)
+            })
+            package_objects <- c(package_objects, tmp_class_objects)
+            
+          }
+        }
+        
       }
-      
-      
+      tmp_obj@checked <- TRUE
+      package_objects[[i_class]] <- tmp_obj
       
     }
+    object_checked <- sapply(package_objects, function(x){x@checked})
+    
+    curr_classes <- sapply(package_objects, function(x){x@name})
   }
+  
+  out_graph <- create_class_graph(package_objects, slot_objects)
 }
 
 
