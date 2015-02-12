@@ -21,12 +21,13 @@ get_package_env <- function(package = "."){
   
   has_package <- grepl("^package:", package)
   
-  if ((package = ".") || (!has_package)){
+  if ((package == ".") || (!has_package)){
     package_env <- devtools::load_all(devtools::as.package(package))$env
   } else {
       loaded_packages <- search()
       pos <- match(package, loaded_packages)
       package_env <- as.environment(pos)
+      assign(".packageName", value = substring(package, 9), envir = package_env)
     }
   package_env
   
