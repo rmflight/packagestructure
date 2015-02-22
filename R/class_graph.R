@@ -142,17 +142,17 @@ class_graph <- function(package = ".", depth = 0){
 #' given the package objects / classes, and slot objects / classes, create a graph that represents
 #' their relationships
 #' 
-#' @param package_objects the package objects
-#' @param slot_objects the slot objects
-#' @param other_classes other, generally base classes
+#' @param package_classes the package objects
+#' @param slot_classes the slot objects
+#' @param other_classes other, generally base classes, these get appended to names
 #' 
 #' @return a graph
 #' @export
-create_class_graph <- function(package_objects, slot_objects, other_classes){
-  package_nodes <- sapply(package_objects, function(x){x@id})
-  package_classes <- sapply(package_objects, function(x){x@name})
+create_class_graph <- function(package_classes, slot_classes, other_classes){
+  package_nodes <- sapply(package_classes, function(x){x@id})
+  package_classes <- sapply(package_classes, function(x){x@name})
   names(package_classes) <- package_nodes
-  slot_nodes <- sapply(slot_objects, function(x){x@id})
+  slot_nodes <- sapply(slot_classes, function(x){x@id})
   
   other_nodes <- other_classes
   
@@ -166,14 +166,14 @@ create_class_graph <- function(package_objects, slot_objects, other_classes){
   nodeData(out_graph, slot_nodes, "type") <- "slot"
   nodeData(out_graph, other_nodes, "type") <- "base"
   
-  nodeData(out_graph, package_nodes, "name") <- sapply(package_objects, function(x){x@name})
-  nodeData(out_graph, package_nodes, "package") <- sapply(package_objects, function(x){x@package})
+  nodeData(out_graph, package_nodes, "name") <- sapply(package_classes, function(x){x@name})
+  nodeData(out_graph, package_nodes, "package") <- sapply(package_classes, function(x){x@package})
   
-  nodeData(out_graph, slot_nodes, "name") <- sapply(slot_objects, function(x){x@name})
-  nodeData(out_graph, slot_nodes, "package") <- sapply(slot_objects, function(x){x@package})
+  nodeData(out_graph, slot_nodes, "name") <- sapply(slot_classes, function(x){x@name})
+  nodeData(out_graph, slot_nodes, "package") <- sapply(slot_classes, function(x){x@package})
   nodeData(out_graph, other_nodes, "name") <- other_nodes
-  for (i_slot in seq_along(slot_objects)){
-    tmp_slot <- slot_objects[[i_slot]]
+  for (i_slot in seq_along(slot_classes)){
+    tmp_slot <- slot_classes[[i_slot]]
     n1 <- tmp_slot@id
     n2 <- tmp_slot@parent
     out_graph <- addEdge(n2, n1, out_graph, 2)
