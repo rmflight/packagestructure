@@ -154,9 +154,7 @@ create_class_graph <- function(package_classes, slot_classes, other_classes){
   names(package_class_names) <- package_nodes
   slot_nodes <- sapply(slot_classes, function(x){x@id})
   
-  other_nodes <- other_classes
-  
-  out_graph <- graphNEL(nodes = c(package_nodes, slot_nodes, other_nodes), edgemode = "directed")
+  out_graph <- graphNEL(nodes = c(package_nodes, slot_nodes), edgemode = "directed")
   nodeDataDefaults(out_graph, "type") <- "none"
   nodeDataDefaults(out_graph, "package") <- "none"
   nodeDataDefaults(out_graph, "name") <- "none"
@@ -164,14 +162,17 @@ create_class_graph <- function(package_classes, slot_classes, other_classes){
   
   nodeData(out_graph, package_nodes, "type") <- "class"
   nodeData(out_graph, slot_nodes, "type") <- "slot"
-  nodeData(out_graph, other_nodes, "type") <- "base"
-  
+    
   nodeData(out_graph, package_nodes, "name") <- sapply(package_classes, function(x){x@name})
   nodeData(out_graph, package_nodes, "package") <- sapply(package_classes, function(x){x@package})
   
   nodeData(out_graph, slot_nodes, "name") <- sapply(slot_classes, function(x){x@name})
   nodeData(out_graph, slot_nodes, "package") <- sapply(slot_classes, function(x){x@package})
-  nodeData(out_graph, other_nodes, "name") <- other_nodes
+  
+  other_class_slots <- sapply(slot_classes, function(x){x@slot_class}) %in% other_classes
+  nodeData(out_graph, slot_nodes[other_class_slots], "name") <- sapply(slot_classes[other_class_slots], function(x){paste(x@name, x@slot_class, sep = ":")})
+  
+  
   for (i_slot in seq_along(slot_classes)){
     tmp_slot <- slot_classes[[i_slot]]
     n1 <- tmp_slot@id
