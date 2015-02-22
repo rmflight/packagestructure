@@ -56,13 +56,13 @@ class_graph <- function(package = ".", depth = 0){
     package_name <- package_env$.packageName
   }
   
-  package_objects <- methods::getClasses(where = package_env)
+  package_classes <- methods::getClasses(where = package_env)
   
   if (length(package_classes) == 0){
     return("No classes in package!")
   }
   
-  package_objects <- lapply(methods::getClasses(where = package_env), function(x){
+  package_classes <- lapply(methods::getClasses(where = package_env), function(x){
     new("class_object",
         id = paste(x, ":", "class", "::", x, ":", package_name, sep = ""),
         name = x,
@@ -71,17 +71,17 @@ class_graph <- function(package = ".", depth = 0){
         level = 0)
   })
   
-  slot_objects <- list()
+  slot_classes <- list()
   
-  object_checked <- sapply(package_objects, function(x){x@checked})
+  pkg_classes_checked <- sapply(package_classes, function(x){x@checked})
   
-  curr_classes <- sapply(package_objects, function(x){x@name})
+  curr_classes <- sapply(package_classes, function(x){x@name})
   
-  while (sum(object_checked) != length(object_checked)){
-    to_check <- which(!object_checked)
+  while (sum(pkg_classes_checked) != length(pkg_classes_checked)){
+    to_check <- which(!pkg_classes_checked)
     for (i_class in to_check){
       print(i_class)
-      tmp_obj <- package_objects[[i_class]]
+      tmp_obj <- package_classes[[i_class]]
       tmp_class <- methods::getClass(tmp_obj@name)
       
       tmp_slots <- tmp_class@slots
@@ -96,17 +96,17 @@ class_graph <- function(package = ".", depth = 0){
               slot_class = t_slot,
               package = tmp_obj@package)
         })
-        tmp_objects <- lapply(tmp_objects, function(x){
+        tmp_slot_classes <- lapply(tmp_objects, function(x){
           x@id <- paste(x@name, x@type, x@parent, x@package, sep = ":")
           x
         })
-        slot_objects <- c(slot_objects, tmp_objects)
+        slot_classes <- c(slot_classes, tmp_slot_classes)
         
         if (tmp_obj@level < (depth + 1)){
-          slot_classes <- sapply(tmp_objects, function(x){
+          get_classes <- sapply(tmp_objects, function(x){
             x@slot_class
           })
-          new_classes <- slot_classes[!(slot_classes %in% c(base_classes, curr_classes))]
+          new_classes <- get_classes[!(get_classes %in% c(base_classes, curr_classes))]
           
           if (length(new_classes) != 0){
             tmp_class_objects <- lapply(new_classes, function(x){
@@ -118,22 +118,22 @@ class_graph <- function(package = ".", depth = 0){
                   package = x_class@package,
                   level = tmp_obj@level + 1)
             })
-            package_objects <- c(package_objects, tmp_class_objects)
+            package_classes <- c(package_classes, tmp_class_objects)
             
           }
         }
         
       }
       tmp_obj@checked <- TRUE
-      package_objects[[i_class]] <- tmp_obj
+      package_classes[[i_class]] <- tmp_obj
       
     }
-    object_checked <- sapply(package_objects, function(x){x@checked})
+    pkg_classes_checked <- sapply(package_classes, function(x){x@checked})
     
-    curr_classes <- sapply(package_objects, function(x){x@name})
+    curr_classes <- sapply(package_classes, function(x){x@name})
   }
   
-  out_graph <- create_class_graph(package_objects, slot_objects, base_classes)
+  out_graph <- create_class_graph(package_classes, slot_classes, base_classes)
   out_graph
 }
 
