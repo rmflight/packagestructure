@@ -150,8 +150,8 @@ class_graph <- function(package = ".", depth = 0){
 #' @export
 create_class_graph <- function(package_classes, slot_classes, other_classes){
   package_nodes <- sapply(package_classes, function(x){x@id})
-  package_classes <- sapply(package_classes, function(x){x@name})
-  names(package_classes) <- package_nodes
+  package_class_names <- sapply(package_classes, function(x){x@name})
+  names(package_class_names) <- package_nodes
   slot_nodes <- sapply(slot_classes, function(x){x@id})
   
   other_nodes <- other_classes
@@ -185,8 +185,8 @@ create_class_graph <- function(package_classes, slot_classes, other_classes){
       edgeData(out_graph, n1, n3, "type") <- "class"
     }
     
-    if (n3 %in% package_classes){
-      n3_true <- names(package_classes)[package_classes %in% n3]
+    if (n3 %in% package_class_names){
+      n3_true <- names(package_class_names)[package_class_names %in% n3]
       out_graph <- addEdge(n1, n3_true, out_graph, 1)
       edgeData(out_graph, n1, n3_true, "type") <- "class"
     }
