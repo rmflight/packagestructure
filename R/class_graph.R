@@ -236,7 +236,7 @@ multiclass_tree <- function(classes, where, all = FALSE){
   
   for (i_tree in seq_along(classes)){
     tmp_tree <- classTree(classes[i_tree], where, all)
-    if (is.null(edgeL(tmp_tree)[[1]])){
+    if (graph::numEdges(tmp_tree) == 0){
       new_nodes <- nodes(tmp_tree)[!(nodes(tmp_tree) %in% nodes(multi_tree))]
       multi_tree <- addNode(new_nodes, multi_tree)
     } else {
