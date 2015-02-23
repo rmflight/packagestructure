@@ -1,9 +1,8 @@
 #' class object
 #' 
-#' @slot id an identifier for the object, character, normally name:type:parent:package
+#' @slot id an identifier for the object, character, normally name:type:package
 #' @slot name the name of the class (also the class of it)
 #' @slot type is it a "slot" of another class or a "class" itself
-#' @slot parent what is the parent class
 #' @slot package what package does the object belong to
 #' @slot checked has it been checked whether it contains any slots
 #' @slot level what level of package depth have we gone
@@ -12,7 +11,6 @@ setClass("class_object",
          slots = list(id = "character",
                       name = "character",
                       type = "character",
-                      parent = "character",
                       package = "character",
                       checked = "logical",
                       level = "numeric"),
@@ -64,9 +62,11 @@ class_graph <- function(package = ".", depth = 0){
   
   package_class_tree <- multiclass_tree(package_classes, where = package_env, all = TRUE)
   
-  package_classes <- lapply(methods::getClasses(where = package_env), function(x){
+  package_class_nodes <- nodes(package_class_tree)
+  
+  package_classes <- lapply(package_classes, function(x){
     new("class_object",
-        id = paste(x, ":", "class", "::", x, ":", package_name, sep = ""),
+        id = paste(x, ":", "class", ":", x, ":", package_name, sep = ""),
         name = x,
         parent = "",
         package = package_name,
