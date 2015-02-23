@@ -231,19 +231,15 @@ get_package_env <- function(package = "."){
 #' @param all get all of the sub-classes or only direct
 #' 
 #' @return graphNEL
+#' @import graph
 #' @export
 multiclass_tree <- function(classes, where, all = FALSE){
   
-  multi_tree <- new("graphNEL", edgemode = "directed")
+  multi_tree <- igraph::graph(n = 0, directed = TRUE)
   
   for (i_tree in seq_along(classes)){
     tmp_tree <- classTree(classes[i_tree], where, all)
-    if (graph::numEdges(tmp_tree) == 0){
-      new_nodes <- nodes(tmp_tree)[!(nodes(tmp_tree) %in% nodes(multi_tree))]
-      multi_tree <- addNode(new_nodes, multi_tree)
-    } else {
-      multi_tree <- join(multi_tree, tmp_tree)
-    }
+    multi_tree <- igraph::graph.union(multi_tree, tmp_tree)
   }
   
   return(multi_tree)
