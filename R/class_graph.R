@@ -235,7 +235,7 @@ get_package_env <- function(package = "."){
 #' @export
 multiclass_tree <- function(classes, where, all = FALSE){
   
-  multi_tree <- igraph::graph(n = 0, directed = TRUE)
+  multi_tree <- igraph::graph.empty(directed = TRUE)
   
   for (i_tree in seq_along(classes)){
     tmp_tree <- classTree(classes[i_tree], where, all)
@@ -281,7 +281,7 @@ classTree <- function(Cl, where, all = FALSE)
       if(getOption('verbose'))  cat(" is leaf\n")
       ## one node named 'cl':
       g <- igraph::graph.empty()
-      g <- add.vertices(g, 1, name=cl)
+      g <- add.vertices(g, 1, name=clN)
     }
     else {
       if(getOption('verbose'))  cat(" has leaves:\n\t")
@@ -290,7 +290,7 @@ classTree <- function(Cl, where, all = FALSE)
         if(getOption('verbose'))  cat(":: ",clN,"-",cc,sep="")
         st <- subtree(getClass(cc, where = where), all = all)
         ##    -------## recursive
-        if(numNodes(st) > 1)
+        #if(numNodes(st) > 1)
           g <- igraph::graph.union(g, st)
       }
     }
