@@ -217,3 +217,137 @@ get_package_env <- function(package = "."){
   package_env
   
 }
+
+
+#' multi-class tree
+#' 
+#' Given many different classes for a package, get each of their trees, and then join them
+#' together to form a single tree
+#' 
+#' @param classes the classes to get
+#' @param where the package namespace of the classes
+#' @param all get all of the sub-classes or only direct
+#' 
+#' @return graphNEL
+#' @export
+multiclass_tree <- function(classes, where, all = FALSE){
+  
+  multi_tree <- new("graphNEL", edgemode = "directed")
+  
+  for (i_tree in seq_along(classes)){
+    tmp_tree <- classTree(classes[i_tree], where, all)
+    if (is.null(edgeL(tmp_tree)[[1]])){
+      new_nodes <- nodes(tmp_tree)[!(nodes(tmp_tree) %in% nodes(multi_tree))]
+      multi_tree <- addNode(new_nodes, multi_tree)
+    } else {
+      multi_tree <- join(multi_tree, tmp_tree)
+    }
+  }
+  
+  return(multi_tree)
+  
+}
+
+#' generate class tree
+#' 
+#' Given a class name, generates the class tree for that class.
+#' 
+#' This function is originally written by Martin Maechler in the \package{classGraph} package.
+#' I copied it from the \package{classGraph} package. Didn't want to depend on it as that then forces
+#' a dependency on \package{Rgraphviz} that I want to avoid. 
+#' 
+#' @author Martin Maechler
+#' @param Cl class
+#' @param where the package namespace to query
+#' @param all \emph{all} of the inherited classes or just direct sub-classes to return
+#' 
+#' @export
+#' @return graphNEL
+#' @import graph
+classTree <- function(Cl, where, all = FALSE)
+{
+  ## First a check
+  if (isClassDef(Cl)) {
+    cDef <- Cl
+    Cl <- cDef@className
+  } else cDef <- getClass(Cl)
+  
+  ## Now define a recursive function that computes the extended subtree
+  ## for one class, and uses this for all sub-classes of Cl
+  subtree <- function(cl, all) {
+    stopifnot(isClassDef(cl))
+    clN <- cl@className
+    if(getOption('verbose')) cat(" ST",clN,":")
+    sc <- subClasses(cl, directOnly = !all)
+    if(length(sc) == 0) {
+      if(getOption('verbose'))  cat(" is leaf\n")
+      ## one node named 'cl':
+      g <- new("graphNEL", nodes = clN, edgemode = "directed")
+    }
+    else {
+      if(getOption('verbose'))  cat(" has leaves:\n\t")
+      g <- bGraph(root = clN, leaves = sc, mode = "directed")
+      for(cc in sc) {
+        if(getOption('verbose'))  cat(":: ",clN,"-",cc,sep="")
+        st <- subtree(getClass(cc, where = where), all = all)
+        ##    -------## recursive
+        if(numNodes(st) > 1)
+          g <- join(g, st)
+      }
+    }
+    g
+  }
+  
+  subtree(cDef, all = all)
+}
+
+subClasses <- function(Cl, directOnly = TRUE, complete = TRUE, ...)
+{
+  ## utility for classTree():
+  if (isClassDef(Cl)) {
+    cDef <- Cl
+    Cl <- cDef@className
+  } else { ## need getClass() can give error because sub classes can
+    ## be "not defined" (?!)   -- e.g. "iMatrix"
+    cDef <- if (complete) getClass(Cl) else getClassDef(Cl)
+  }
+  
+  subs <- showExtends(cDef@subclasses, printTo = FALSE)
+  if(directOnly) subs$what[subs$how == "directly"] else subs$what
+}
+
+numOutEdges <- function(g)
+{
+  ## Purpose: returns a named integer vector giving for each node in g,
+  ##  	the number of edges *from* the node
+  ## ----------------------------------------------------------------------
+  ## Arguments: g: graph
+  ## ----------------------------------------------------------------------
+  ## Author: Martin Maechler, Date:  8 Feb 2007, 22:59
+  el <- sapply(edgeL(g), `[[`, "edges")
+  sapply(el, length)
+}
+
+is.leaf <- function(g) numOutEdges(g) == 0
+## The graph package now defines a leaves() generic {w/ degree.dir}
+##     leaves  <- function(g) nodes(g)[is.leaf(g)]
+
+
+bGraph <- function(n, root = "Mom",
+                   leaves = paste(l.prefix, seq(length=n), sep=""),
+                   l.prefix = "D", # for 'D'aughter
+                   weights = NULL,
+                   mode = c("undirected", "directed"))
+{
+  ## Purpose: Create a "branch graph", a simple tree with root and
+  ##		n branches / leaves
+  ## ----------------------------------------------------------------------
+  ## Author: Martin Maechler, Date: Aug 2005
+  if(!missing(leaves)) {
+    stopifnot(is.character(leaves))
+    n <- length(leaves)
+  } else stopifnot(is.numeric(n), length(n) == 1, n >= 0)
+  
+  mode <- match.arg(mode)
+  ftM2graphNEL(cbind(root, leaves), W = weights, edgemode = mode)
+}
