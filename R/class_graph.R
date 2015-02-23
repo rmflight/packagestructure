@@ -280,7 +280,8 @@ classTree <- function(Cl, where, all = FALSE)
     if(length(sc) == 0) {
       if(getOption('verbose'))  cat(" is leaf\n")
       ## one node named 'cl':
-      g <- new("graphNEL", nodes = clN, edgemode = "directed")
+      g <- igraph::graph.empty()
+      g <- add.vertices(g, 1, name=cl)
     }
     else {
       if(getOption('verbose'))  cat(" has leaves:\n\t")
@@ -290,7 +291,7 @@ classTree <- function(Cl, where, all = FALSE)
         st <- subtree(getClass(cc, where = where), all = all)
         ##    -------## recursive
         if(numNodes(st) > 1)
-          g <- join(g, st)
+          g <- igraph::graph.union(g, st)
       }
     }
     g
@@ -346,6 +347,6 @@ bGraph <- function(n, root = "Mom",
     n <- length(leaves)
   } else stopifnot(is.numeric(n), length(n) == 1, n >= 0)
   
-  mode <- match.arg(mode)
-  ftM2graphNEL(cbind(root, leaves), W = weights, edgemode = mode)
+  mode <- "directed" %in% mode
+  igraph::graph.edgelist(cbind(root, leaves), directed = mode)
 }
