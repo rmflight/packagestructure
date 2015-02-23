@@ -62,6 +62,8 @@ class_graph <- function(package = ".", depth = 0){
     return("No classes in package!")
   }
   
+  package_class_tree <- multiclass_tree(package_classes, where = package_env, all = TRUE)
+  
   package_classes <- lapply(methods::getClasses(where = package_env), function(x){
     new("class_object",
         id = paste(x, ":", "class", "::", x, ":", package_name, sep = ""),
