@@ -63,12 +63,15 @@ class_graph <- function(package = ".", depth = 0){
   package_class_tree <- multiclass_tree(package_classes, where = package_env, all = TRUE)
   
   # remove ClassUnions before proceeding, they mess us up in all kinds of ways
-  is_union <- which(sapply(package_classes, isClassUnion))
-  package_class_tree <- igraph::delete.vertices(package_class_tree, is_union)
-  
   package_class_vertices <- igraph::V(package_class_tree)$name
-  
   package_classes <- lapply(package_class_vertices, getClassDef, where = package_env)
+  is_union <- which(sapply(package_classes, isClassUnion))
+  
+  if (length(is_union) > 0){
+    package_class_tree <- igraph::delete.vertices(package_class_tree, is_union)
+    package_class_vertices <- igraph::V(package_class_tree)$name
+    package_classes <- lapply(package_class_vertices, getClassDef, where = package_env)
+  }
   
   package_class_id <- sapply(package_classes, function(x){paste(x@className, x@package, sep = ":")})
   
