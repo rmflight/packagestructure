@@ -248,8 +248,8 @@ get_package_env <- function(package = "."){
 #' @param where the package namespace of the classes
 #' @param all get all of the sub-classes or only direct
 #' 
-#' @return graphNEL
-#' @import graph
+#' @return igraph
+#' @import igraph
 #' @export
 multiclass_tree <- function(classes, where, all = FALSE){
   
@@ -278,8 +278,8 @@ multiclass_tree <- function(classes, where, all = FALSE){
 #' @param all \emph{all} of the inherited classes or just direct sub-classes to return
 #' 
 #' @export
-#' @return graphNEL
-#' @import graph
+#' @return igraph
+#' @import igraph
 classTree <- function(Cl, where, all = FALSE)
 {
   ## First a check
@@ -299,7 +299,7 @@ classTree <- function(Cl, where, all = FALSE)
       if(getOption('verbose'))  cat(" is leaf\n")
       ## one node named 'cl':
       g <- igraph::graph.empty()
-      g <- add.vertices(g, 1, name=clN)
+      g <- igraph::add.vertices(g, 1, name=clN)
     }
     else {
       if(getOption('verbose'))  cat(" has leaves:\n\t")
