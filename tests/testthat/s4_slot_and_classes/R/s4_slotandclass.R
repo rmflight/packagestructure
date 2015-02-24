@@ -1,13 +1,18 @@
-setClass("class1",
-         slots = list(slot1 = "matrix"))
+setClass("slot_A",
+         slots = list(a = "matrix"))
 
-setClass("class1_1",
-         slots = list(slot1_1 = "class1"))
+setClass("class_A",
+         slots = list(slot_A = "slot_A"))
 
-setClass("class1_2",
-         contains = "class1_1",
-         slots = list(slot1_2 = "character"))
+setClass("class_B",
+         contains = "class_A",
+         slots = list(slot_B = "character",
+                      slot_C = "numeric"))
 
-setClass("class2",
-         slots = list(slot1 = "matrix"))
+setClass("class_C",
+         contains = "class_A",
+         slots = list(slot_D = "matrix",
+                      slot_E = "character"))
 
+setClass("class_D",
+         contains = "class_B")
