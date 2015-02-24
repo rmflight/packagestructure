@@ -99,72 +99,37 @@ class_graph <- function(package = ".", depth = 0){
   
   leaf_vertices <- which((n_in_vertices == 0) & (n_out_vertices >= 1)) # the leaves to iterate over, doing recursion
   
+  slot_list <- lapply(class_slots, function(x){x$id})
+  keep_slots <- slot_list
   
-  
-  slot_classes <- list()
-  
-  pkg_classes_checked <- sapply(package_classes, function(x){x@checked})
-  
-  curr_classes <- sapply(package_classes, function(x){x@name})
-  
-  while (sum(pkg_classes_checked) != length(pkg_classes_checked)){
-    to_check <- which(!pkg_classes_checked)
-    for (i_class in to_check){
-      print(i_class)
-      tmp_obj <- package_classes[[i_class]]
-      tmp_class <- methods::getClass(tmp_obj@name)
-      
-      tmp_slots <- tmp_class@slots
-      
-      if (length(tmp_slots) != 0){
-        new_classes <- character(0)
-        tmp_objects <- lapply(names(tmp_slots), function(x){
-          t_slot <- tmp_slots[[x]]
-          new("slot_object",
-              name = x,
-              parent = tmp_obj@id,
-              slot_class = t_slot,
-              package = tmp_obj@package)
-        })
-        tmp_slot_classes <- lapply(tmp_objects, function(x){
-          x@id <- paste(x@name, x@type, x@parent, x@package, sep = ":")
-          x
-        })
-        slot_classes <- c(slot_classes, tmp_slot_classes)
-        
-        if (tmp_obj@level < (depth + 1)){
-          get_classes <- sapply(tmp_objects, function(x){
-            x@slot_class
-          })
-          new_classes <- get_classes[!(get_classes %in% c(base_classes, curr_classes))]
-          
-          if (length(new_classes) != 0){
-            tmp_class_objects <- lapply(new_classes, function(x){
-              x_class <- methods::getClass(x)
-              new("class_object",
-                  id = paste(x_class@className, ":", "class", "::", x_class@package, sep = ""),
-                  name = x_class@className,
-                  parent = "",
-                  package = x_class@package,
-                  level = tmp_obj@level + 1)
-            })
-            package_classes <- c(package_classes, tmp_class_objects)
-            
-          }
-        }
-        
-      }
-      tmp_obj@checked <- TRUE
-      package_classes[[i_class]] <- tmp_obj
-      
+  # removes slots from a list based on an initial and continuously updated list
+  remove_slots <- function(start_vertex, tree, slot_list){
+    if (slot_list[1] != "NA"){
+      slot_to_remove <<- unique(c(slot_to_remove, slot_list[[start_vertex]]))
     }
-    pkg_classes_checked <- sapply(package_classes, function(x){x@checked})
-    
-    curr_classes <- sapply(package_classes, function(x){x@name})
+    below <- igraph::neighbors(tree, start_vertex, 1)
+    if (length(below) > 0){
+      for (i_below in below){
+        #cat(i_below, ", ", sep = "")
+        keep_slots[[i_below]] <<- keep_slots[[i_below]][!(keep_slots[[i_below]] %in% slot_to_remove)]
+        remove_slots(i_below, tree, slot_list)
+      }
+    }
   }
   
-  out_graph <- create_class_graph(package_classes, slot_classes, base_classes)
-  out_graph
+  for (i_leaf in leaf_vertices){
+    #cat("\nleaf: ", i_leaf, "\n", sep = "")
+    slot_to_remove <- character(0)
+    if (slot_list[[i_leaf]][1] != "NA"){
+      slot_to_remove <- unique(c(slot_to_remove, slot_list[[i_leaf]]))
+    }
+    remove_slots(i_leaf, package_class_tree, slot_list)
+  }
+  
+  # need to add slots to graph, and then add edges between slots and classes based on keep_slots
+  # should have data frame with *name* of vertex, *id* of vertex (class:package, slot:class:package)
+  # and index of vertex in the graph. This should allow easy matching to create the class - slot edges
+  
 }
 
 #' create a class graph
