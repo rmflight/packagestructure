@@ -62,16 +62,20 @@ class_graph <- function(package = ".", depth = 0){
   
   package_class_tree <- multiclass_tree(package_classes, where = package_env, all = TRUE)
   
+  # remove ClassUnions before proceeding, they mess us up in all kinds of ways
+  is_union <- which(sapply(package_classes, isClassUnion))
+  package_class_tree <- igraph::delete.vertices(package_class_tree, is_union)
+  
   package_class_vertices <- igraph::V(package_class_tree)$name
   
-  package_classes <- lapply(package_class_nodes, getClassDef, where = package_env)
+  package_classes <- lapply(package_class_vertices, getClassDef, where = package_env)
   
   package_class_id <- sapply(package_classes, function(x){paste(x@className, x@package, sep = ":")})
   
   class_slots <- lapply(package_classes, function(x){
     tmp_slots <- x@slots
     n_slots <- length(tmp_slots)
-    slot_package <- slot_names <- slot_class <- slot_id <- "NA"
+    slot_package <- slot_names <- slot_class <- slot_id <- slot_class_package <-  "NA"
     if (n_slots != 0){
       slot_package <- x@package
       slot_names <- names(tmp_slots)
@@ -83,11 +87,14 @@ class_graph <- function(package = ".", depth = 0){
     return(list(id = slot_id, names = slot_names, package = slot_package, class = slot_class, class_package = slot_class_package))
   })
   
-  n_in_vertices <- sapply(seq(1, length(package_class_nodes)), function(node_id){
-    length(incident(package_class_tree, node_id, mode = "in"))
+  n_in_vertices <- sapply(seq(1, length(package_class_vertices)), function(node_id){
+    length(igraph::incident(package_class_tree, node_id, mode = "in"))
+  })
+  n_out_vertices <- sapply(seq(1, length(package_class_vertices)), function(node_id){
+    length(igraph::incident(package_class_tree, node_id, mode = "out"))
   })
   
-  leaf_vertices <- which(n_in_vertices == 1) # the leaves to iterate over, doing recursion
+  leaf_vertices <- which((n_in_vertices == 0) & (n_out_vertices >= 1)) # the leaves to iterate over, doing recursion
   
   
   
