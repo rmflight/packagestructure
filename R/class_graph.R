@@ -74,6 +74,10 @@ class_graph <- function(package = ".", depth = 0){
   }
   
   package_class_id <- sapply(package_classes, function(x){paste(x@className, x@package, sep = ":")})
+  V(package_class_tree)$name <- package_class_id
+  V(package_class_tree)$label <- package_class_vertices # using the class names as labels
+  V(package_class_tree)$type <- "class"
+  names(package_classes) <- package_class_id
   
   class_slots <- lapply(package_classes, function(x){
     tmp_slots <- x@slots
@@ -100,8 +104,16 @@ class_graph <- function(package = ".", depth = 0){
   leaf_vertices <- which((n_in_vertices == 0) & (n_out_vertices >= 1)) # the leaves to iterate over, doing recursion
   
   slot_list <- lapply(class_slots, function(x){x$id})
+  slot_names <- lapply(class_slots, function(x){x$names})
+  
   keep_slots <- slot_list
   
+  all_slots <- unlist(slot_list, use.names = FALSE)
+  all_names <- unlist(slot_names, use.names = FALSE)
+  
+  dup_slots <- duplicated(all_slots)
+  all_slots <- all_slots[!dup_slots]
+  all_names <- all_names[!dup_slots]
   # removes slots from a list based on an initial and continuously updated list
   remove_slots <- function(start_vertex, tree, slot_list){
     if (slot_list[1] != "NA"){
@@ -129,7 +141,38 @@ class_graph <- function(package = ".", depth = 0){
   # need to add slots to graph, and then add edges between slots and classes based on keep_slots
   # should have data frame with *name* of vertex, *id* of vertex (class:package, slot:class:package)
   # and index of vertex in the graph. This should allow easy matching to create the class - slot edges
+  slot_tree <- igraph::graph.empty(directed = TRUE)
+  slot_tree <- igraph::add.vertices(slot_tree, length(all_slots), name = all_slots, label = all_names, type = "slot")
   
+  class_data <- data.frame(name = V(package_class_tree)$name, label = V(package_class_tree)$label, type = V(package_class_tree)$type, stringsAsFactors = FALSE)
+  row.names(class_data) <- class_data$name
+  slot_data <- data.frame(name = V(slot_tree)$name, label = V(slot_tree)$label, type = V(slot_tree)$type, stringsAsFactors = FALSE)
+  row.names(slot_data) <- slot_data$name
+  
+  pc_tree <- package_class_tree
+  pc_tree <- remove.vertex.attribute(pc_tree, "label")
+  pc_tree <- remove.vertex.attribute(pc_tree, "type")
+  
+  s_tree <- slot_tree 
+  s_tree <- remove.vertex.attribute(s_tree, "label")
+  s_tree <- remove.vertex.attribute(s_tree, "type")
+  
+  pcs_tree <- igraph::graph.union(pc_tree, s_tree)
+  
+  cs_data <- rbind(class_data, slot_data)
+  
+  V(pcs_tree)$label <- cs_data[V(pcs_tree)$name, "label"]
+  V(pcs_tree)$type <- cs_data[V(pcs_tree)$name, "type"]
+  
+  for (i_class in names(keep_slots)){
+    n_slot <- length(keep_slots[[i_class]])
+    if (n_slot > 0){
+      pcs_tree[from = rep(i_class, n_slot), to = keep_slots[[i_class]]] <- TRUE
+    }
+  }
+  
+  # this creates links from classes to their slots. Now we need to go through the slots and see if they link to other classes
+  # already present
 }
 
 #' create a class graph
