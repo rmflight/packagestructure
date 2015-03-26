@@ -1,6 +1,6 @@
 Package: classgraphslots
 Title: determine the class dependency graph, including slots
-Version: 0.0.33
+Version: 0.0.34
 Date: 2015-03-25
 Authors@R: "Robert M Flight <rflight79@gmail.com> [aut, cre]"
 Description: Examines the classes of a package and slots of classes to
