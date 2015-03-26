@@ -13,7 +13,9 @@ more than a few S4 classes.
 devtools::install_github("rmflight/packagestructure")
 ```
 
-## Example
+## Examples
+
+### A Source Package on Your Local Machine
 
 ```{r}
 library(packagestructure)
@@ -25,6 +27,15 @@ plot(e_g)
 In this example, classes *class_B*, *class_C* directly inherit from *class_A*,
 while *class_D* inherits from *class_B*. Each of these has particular slots
 of particular classes. You can see the set of class definitions [here](https://github.com/rmflight/packagestructure/blob/master/inst/exampledata/R/s4_slotandclass.R).
+
+### An Installed Package
+
+```
+# not run
+library(Matrix)
+m_g <- class_graph("package:Matrix")
+plot(m_g)
+```
 
 ## History
 
