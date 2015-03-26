@@ -1,0 +1,5 @@
+exportClasses(class_A)
+exportClasses(class_B)
+exportClasses(class_C)
+exportClasses(class_D)
+exportClasses(slot_A)
