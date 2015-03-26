@@ -19,3 +19,8 @@ e_g <- class_graph(example_package)
 plot(e_g)
 ```
 
+## TODO
+
+* improve test coverage (classunion and no-classes)
+* add travis-ci
+* allow specification of classes to show and classes to exclude
