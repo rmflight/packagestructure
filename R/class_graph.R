@@ -215,9 +215,9 @@ multiclass_tree <- function(classes, where, all = FALSE){
 #' 
 #' Given a class name, generates the class tree for that class.
 #' 
-#' This function is originally written by Martin Maechler in the \package{classGraph} package.
-#' I copied it from the \package{classGraph} package, as I did not want to depend on
-#' \package{RGraphviz} for this package.
+#' This function is originally written by Martin Maechler in the \code{classGraph} package.
+#' I copied it from the \code{classGraph} package, as I did not want to depend on
+#' \code{RGraphviz} for this package.
 #' 
 #' @author Martin Maechler
 #' @param Cl class
@@ -268,7 +268,7 @@ classTree <- function(Cl, where, all = FALSE)
 #' 
 #' given a class definition, get the subclasses of that class
 #' 
-#' @parma Cl class to get sub-classes of
+#' @param Cl class to get sub-classes of
 #' @param directOnly get only the direct sub-classes
 #' @param complete get complete??
 #' @author Martin Maechler
@@ -293,7 +293,7 @@ subClasses <- function(Cl, directOnly = TRUE, complete = TRUE, ...)
 #' creates a \emph{branch graph}, a simple tree with root and n branches
 #' 
 #' @param n number of leaves
-#' @parma root the root node
+#' @param root the root node
 #' @param leaves the named leaves
 #' @param l.prefix prefix to use for leaves
 #' @param weights weights of edges to the leaves

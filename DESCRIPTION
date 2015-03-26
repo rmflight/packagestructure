@@ -1,12 +1,14 @@
 Package: packagestructure
 Title: provide graphical views of package structure
-Version: 0.1.0
-Date: 2015-03-25
-Authors@R: c(
-    person("Robert M", "Flight", email = "rflight79@gmail.com", role = c("aut", "cre")),
-    person("Martin", "Maechler", email = "maechler at stat.math.ethz.ch", role = "aut"))
-Description: Given a package environment, create different graphs of the package
-    structure. Currently supports viewing the relationship of classes and slots.
+Version: 0.1.1
+Date: 2015-03-26
+Authors@R: c( person("Robert M", "Flight", email =
+        "rflight79@gmail.com", role = c("aut", "cre")),
+        person("Martin", "Maechler", email = "maechler at
+        stat.math.ethz.ch", role = "aut"))
+Description: Given a package environment, create different graphs of
+        the package structure. Currently supports viewing the
+        relationship of classes and slots.
 Depends: R (>= 3.0), igraph
 VignetteBuilder: knitr
 License: GPL-2
