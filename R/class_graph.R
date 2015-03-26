@@ -39,12 +39,11 @@ setClass("slot_object",
 #' class graph of package
 #' 
 #' @param package the directory or package name in current environment
-#' @param depth how deep to go for classes \emph{outside} the package (default = 0)
 #' 
 #' @import devtools methods igraph
 #' @export
 #' @return igraph
-class_graph <- function(package = ".", depth = 0){
+class_graph <- function(package = "."){
   base_classes <- c("list", "character", "numeric", "double", "integer", "matrix", "data.frame", "ANY")
   package_env <- get_package_env(package)
   
@@ -191,8 +190,12 @@ class_graph <- function(package = ".", depth = 0){
       pcs_tree[from = slot_data[i_slot, "id"], to = slot_data[i_slot, "class_id"]] <- TRUE
     }
   }
+
+  V(pcs_tree)$shape <- "square"
+  V(pcs_tree)$shape[V(pcs_tree)$type == "slot"] <- "circle"
   
   pcs_tree
+  
 }
 
 #' create a class graph
