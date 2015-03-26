@@ -119,7 +119,7 @@ class_graph <- function(package = "."){
   s_tree <- remove.vertex.attribute(s_tree, "label")
   s_tree <- remove.vertex.attribute(s_tree, "type")
   
-  pcs_tree <- igraph::graph.union(pc_tree, s_tree)
+  pcs_tree <- suppressWarnings(igraph::graph.union(pc_tree, s_tree))
   
   cs_data <- rbind(class_data, slot_data)
   
@@ -175,7 +175,7 @@ get_package_env <- function(package = "."){
   has_package <- grepl("^package:", package)
   
   if ((package == ".") || (!has_package)){
-    package_env <- devtools::load_all(devtools::as.package(package))$env
+    package_env <- suppressMessages(devtools::load_all(devtools::as.package(package))$env)
   } else {
       loaded_packages <- search()
       pos <- match(package, loaded_packages)
@@ -204,7 +204,7 @@ multiclass_tree <- function(classes, where, all = FALSE){
   
   for (i_tree in seq_along(classes)){
     tmp_tree <- classTree(classes[i_tree], where, all)
-    multi_tree <- igraph::graph.union(multi_tree, tmp_tree)
+    multi_tree <- suppressWarnings(igraph::graph.union(multi_tree, tmp_tree))
   }
   
   return(multi_tree)
