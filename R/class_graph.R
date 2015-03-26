@@ -41,9 +41,9 @@ setClass("slot_object",
 #' @param package the directory or package name in current environment
 #' @param depth how deep to go for classes \emph{outside} the package (default = 0)
 #' 
-#' @import devtools methods graph
+#' @import devtools methods igraph
 #' @export
-#' @return graph of classes
+#' @return igraph
 class_graph <- function(package = ".", depth = 0){
   base_classes <- c("list", "character", "numeric", "double", "integer", "matrix", "data.frame", "ANY")
   package_env <- get_package_env(package)
