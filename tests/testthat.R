@@ -1,4 +1,4 @@
 library("testthat")
-library("classgraphslots")
+library("packagestructure")
 
-test_check("classgraphslots")
+test_check("packagestructure")
