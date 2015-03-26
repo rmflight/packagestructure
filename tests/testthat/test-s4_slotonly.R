@@ -1,5 +1,5 @@
 context("S4 slot only")
-test_graph_loc <- system.file("testdata", "s4_slotonly.RData", package = "classgraphslots")
+test_graph_loc <- system.file("testdata", "s4_slotonly.RData", package = "packagestructure")
 
 load(test_graph_loc)
 
