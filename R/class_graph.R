@@ -1,46 +1,9 @@
-#' class object
-#' 
-#' @slot id an identifier for the object, character, normally name:type:package
-#' @slot name the name of the class (also the class of it)
-#' @slot type is it a "slot" of another class or a "class" itself
-#' @slot package what package does the object belong to
-#' @slot checked has it been checked whether it contains any slots
-#' @slot level what level of package depth have we gone
-#' @export
-setClass("class_object",
-         slots = list(id = "character",
-                      name = "character",
-                      type = "character",
-                      package = "character",
-                      checked = "logical",
-                      level = "numeric"),
-         prototype = prototype(type = "class",
-                               checked = FALSE))
-
-#' slot object
-#' 
-#' @slot id identifier of the slot, normally name:type:parent:package
-#' @slot name the name of the slot
-#' @slot type slot
-#' @slot parent the parent class object
-#' @slot slot_class the class of the slot
-#' @slot package the package it belongs to
-#' @slot level what level of package checking have we gone to
-#' @export
-setClass("slot_object",
-         slots = list(id = "character",
-                      name = "character",
-                      type = "character",
-                      parent = "character",
-                      slot_class = "character",
-                      package = "character"),
-         prototype = prototype(type = "slot"))
-
 #' class graph of package
 #' 
 #' @param package the directory or package name in current environment
 #' 
 #' @import devtools methods igraph
+#' @author Robert M Flight
 #' @export
 #' @return igraph
 class_graph <- function(package = "."){
@@ -204,6 +167,7 @@ class_graph <- function(package = "."){
 #' @param package string giving the package environment to find
 #' 
 #' @return environment
+#' @author Robert M Flight
 #' @export
 get_package_env <- function(package = "."){
   stopifnot(is.character(package))
@@ -233,7 +197,7 @@ get_package_env <- function(package = "."){
 #' 
 #' @return igraph
 #' @import igraph
-#' @export
+#' @author Robert M Flight
 multiclass_tree <- function(classes, where, all = FALSE){
   
   multi_tree <- igraph::graph.empty(directed = TRUE)
@@ -252,15 +216,14 @@ multiclass_tree <- function(classes, where, all = FALSE){
 #' Given a class name, generates the class tree for that class.
 #' 
 #' This function is originally written by Martin Maechler in the \package{classGraph} package.
-#' I copied it from the \package{classGraph} package. Didn't want to depend on it as that then forces
-#' a dependency on \package{Rgraphviz} that I want to avoid. 
+#' I copied it from the \package{classGraph} package, as I did not want to depend on
+#' \package{RGraphviz} for this package.
 #' 
 #' @author Martin Maechler
 #' @param Cl class
 #' @param where the package namespace to query
 #' @param all \emph{all} of the inherited classes or just direct sub-classes to return
 #' 
-#' @export
 #' @return igraph
 #' @import igraph
 classTree <- function(Cl, where, all = FALSE)
@@ -301,6 +264,14 @@ classTree <- function(Cl, where, all = FALSE)
   subtree(cDef, all = all)
 }
 
+#' get sub-classes of a class
+#' 
+#' given a class definition, get the subclasses of that class
+#' 
+#' @parma Cl class to get sub-classes of
+#' @param directOnly get only the direct sub-classes
+#' @param complete get complete??
+#' @author Martin Maechler
 subClasses <- function(Cl, directOnly = TRUE, complete = TRUE, ...)
 {
   ## utility for classTree():
@@ -316,33 +287,25 @@ subClasses <- function(Cl, directOnly = TRUE, complete = TRUE, ...)
   if(directOnly) subs$what[subs$how == "directly"] else subs$what
 }
 
-numOutEdges <- function(g)
-{
-  ## Purpose: returns a named integer vector giving for each node in g,
-  ##  	the number of edges *from* the node
-  ## ----------------------------------------------------------------------
-  ## Arguments: g: graph
-  ## ----------------------------------------------------------------------
-  ## Author: Martin Maechler, Date:  8 Feb 2007, 22:59
-  el <- sapply(edgeL(g), `[[`, "edges")
-  sapply(el, length)
-}
 
-is.leaf <- function(g) numOutEdges(g) == 0
-## The graph package now defines a leaves() generic {w/ degree.dir}
-##     leaves  <- function(g) nodes(g)[is.leaf(g)]
-
-
+#' create a branch graph
+#' 
+#' creates a \emph{branch graph}, a simple tree with root and n branches
+#' 
+#' @param n number of leaves
+#' @parma root the root node
+#' @param leaves the named leaves
+#' @param l.prefix prefix to use for leaves
+#' @param weights weights of edges to the leaves
+#' @param mode one of "undirected" or "directed"
+#' 
+#' @author Martin Maechler
 bGraph <- function(n, root = "Mom",
                    leaves = paste(l.prefix, seq(length=n), sep=""),
                    l.prefix = "D", # for 'D'aughter
                    weights = NULL,
                    mode = c("undirected", "directed"))
 {
-  ## Purpose: Create a "branch graph", a simple tree with root and
-  ##		n branches / leaves
-  ## ----------------------------------------------------------------------
-  ## Author: Martin Maechler, Date: Aug 2005
   if(!missing(leaves)) {
     stopifnot(is.character(leaves))
     n <- length(leaves)
