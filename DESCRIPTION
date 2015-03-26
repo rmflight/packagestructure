@@ -1,6 +1,6 @@
 Package: packagestructure
 Title: provide graphical views of package structure
-Version: 0.1.9
+Version: 0.1.10
 Date: 2015-03-26
 Authors@R: c( person("Robert M", "Flight", email =
         "rflight79@gmail.com", role = c("aut", "cre")),
