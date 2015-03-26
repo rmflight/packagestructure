@@ -22,6 +22,10 @@ plot(e_g)
 
 ![plot of chunk unnamed-chunk-1](figure/unnamed-chunk-1-1.png) 
 
+In this example, classes *class_B*, *class_C* directly inherit from *class_A*,
+while *class_D* inherits from *class_B*. Each of these has particular slots
+of particular classes. You can see the set of class definitions [here](https://github.com/rmflight/packagestructure/blob/master/inst/exampledata/R/s4_slotandclass.R).
+
 ## TODO
 
 * improve test coverage (classunion and no-classes)
