@@ -60,7 +60,7 @@ class_graph <- function(package = ".", depth = 0){
     return("No classes in package!")
   }
   
-  package_class_tree <- multiclass_tree(package_classes, where = package_env, all = TRUE)
+  package_class_tree <- multiclass_tree(package_classes, where = package_env, all = FALSE)
   
   # remove ClassUnions before proceeding, they mess us up in all kinds of ways
   package_class_vertices <- igraph::V(package_class_tree)$name
@@ -173,6 +173,26 @@ class_graph <- function(package = ".", depth = 0){
   
   # this creates links from classes to their slots. Now we need to go through the slots and see if they link to other classes
   # already present
+  # we do this by finding the classes of all the slots, and then searching for bits of the tree that 
+  # have the "class_id", and making new edges
+  slot_data <- unique(data.frame(id = unlist(lapply(class_slots, function(x){x$id}), use.names = FALSE),
+                          name = unlist(lapply(class_slots, function(x){x$names}), use.names = FALSE),
+                          class = unlist(lapply(class_slots, function(x){x$class}), use.names = FALSE),
+                          class_package = unlist(lapply(class_slots, function(x){x$class_package}), use.names = FALSE),
+                          stringsAsFactors = FALSE))
+  slot_data$class_id <- paste(slot_data$class, slot_data$class_package, sep = ":")
+  
+  slot_data <- slot_data[(slot_data$class_id) %in% V(pcs_tree)$name,]
+  
+  n_slot_link <- nrow(slot_data)
+  
+  if (n_slot_link > 0){
+    for (i_slot in seq(1, n_slot_link)){
+      pcs_tree[from = slot_data[i_slot, "id"], to = slot_data[i_slot, "class_id"]] <- TRUE
+    }
+  }
+  
+  pcs_tree
 }
 
 #' create a class graph
