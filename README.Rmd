@@ -24,3 +24,5 @@ plot(e_g)
 * improve test coverage (classunion and no-classes)
 * add travis-ci
 * allow specification of classes to show and classes to exclude
+* add *methods*?
+* add *function call* dependency?
